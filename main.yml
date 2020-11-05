@@ -1,0 +1,50 @@
+- hosts: web
+  tasks: 
+  - name: Install Packages
+    yum: 
+      name: 
+      - httpd
+      - wget
+      state: latest
+    
+
+  
+  - name: ensure httpd is running
+    service:
+      name: httpd 
+      state: started
+  
+   
+  
+  - name: Download Template
+    get_url: 
+      url: https://www.free-css.com/assets/files/free-css-templates/download/page258/highway.zip
+      dest: /var/www/html
+      mode: '0440'
+
+
+  - name: Unzip Highway.zip
+    unarchive:
+      src:  /var/www/html/highway.zip
+      dest: /var/www/html
+      remote_src: yes
+
+
+  - name: Disable Selinux
+    lineinfile: 
+      path: /etc/sysconfig/selinux
+      regexp: "^SELINUX=enforcing$"
+      line: "SELINUX=disabled"
+    notify: Restart httpd
+
+
+  - name: Copy file with owner and permissions
+    shell: mv -f /var/www/html/templatemo_520_highway/* /var/www/html
+
+
+  handlers: 
+  - name: Restart httpd
+    service:
+      name: httpd 
+      state: restarted
+      
